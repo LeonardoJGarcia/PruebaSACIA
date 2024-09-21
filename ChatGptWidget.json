@@ -7,7 +7,7 @@
     "vendor": "Rohit Chouhan",
     "eula": "",
     "license": "MIT",
-    "icon": "https:\/\/raw.githubusercontent.com\/SAP-Custom-Widget\/ChatGptWidget\/main\/icon.png",
+    "icon": "https:\/\/raw.githubusercontent.com\/LeonardoJGarcia\/PruebaSACIA\/main\/icon.png",
     "webcomponents": [
         {
             "kind": "main",
