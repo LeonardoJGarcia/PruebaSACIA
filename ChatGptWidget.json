@@ -1,10 +1,10 @@
 {
     "id": "com.rohitchouhan.sap.chatgptwidget",
-    "version": "1.0.3",
+    "version": "1.0.0",
     "name": "ChatGPT Widget",
     "description": "ChatGPT Custom Widget for SAP Analytics Cloud, To make your application more useful and effective.",
     "newInstancePrefix": "ChatGptWidget",
-    "vendor": "Rohit Chouhan",
+    "vendor": "Bintech S.A de C.V",
     "eula": "",
     "license": "MIT",
     "icon": "https:\/\/raw.githubusercontent.com\/LeonardoJGarcia\/PruebaSACIA\/main\/icon.png",
@@ -12,14 +12,14 @@
         {
             "kind": "main",
             "tag": "com-rohitchouhan-sap-chatgptwidget",
-            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA\/ChatGptWidget.js",
+            "url": "https://raw.githubusercontent.com/LeonardoJGarcia/PruebaSACIA/main/ChatGptWidget.js",
             "integrity": "",
             "ignoreIntegrity": true
         },
         {
             "kind": "builder",
             "tag": "com-rohitchouhan-sap-chatgptwidget-builder",
-            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA\/ChatGptWidget_Builder.js",
+            "url": "https://raw.githubusercontent.com/LeonardoJGarcia/PruebaSACIA/main/ChatGptWidget_Builder.js",
             "integrity": "",
             "ignoreIntegrity": true
         }
