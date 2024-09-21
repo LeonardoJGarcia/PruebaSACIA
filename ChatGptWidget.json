@@ -12,14 +12,14 @@
         {
             "kind": "main",
             "tag": "com-rohitchouhan-sap-chatgptwidget",
-            "url": "https:\/\/cdn.jsdelivr.net\/gh\/SAP-Custom-Widget\/ChatGptWidget@1.0.2\/ChatGptWidget.js",
+            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA\/ChatGptWidget.js",
             "integrity": "",
             "ignoreIntegrity": true
         },
         {
             "kind": "builder",
             "tag": "com-rohitchouhan-sap-chatgptwidget-builder",
-            "url": "https:\/\/cdn.jsdelivr.net\/gh\/SAP-Custom-Widget\/ChatGptWidget@1.0.2\/ChatGptWidget_Builder.js",
+            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA\/ChatGptWidget_Builder.js",
             "integrity": "",
             "ignoreIntegrity": true
         }
