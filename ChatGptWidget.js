@@ -93,7 +93,7 @@
             "Authorization": "Bearer " + apiKey
           },
           body: JSON.stringify({
-            "model": "gpt-3.5-turbo-0125",
+            "model": "gpt-3.5-turbo",
             "prompt": prompt,
             "max_tokens": parseInt(max_tokens),
             "n": 1,
