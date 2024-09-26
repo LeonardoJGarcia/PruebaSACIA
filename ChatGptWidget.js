@@ -98,7 +98,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4"o,  // Cambiado a gpt-4o
+              "model": "gpt-4o",  // Cambiado a gpt-4o
               "messages": [{
                 "role": "user",
                 "content": prompt
