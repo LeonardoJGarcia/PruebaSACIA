@@ -45,7 +45,7 @@
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
-  width:96%;
+    width: 96%;
   }
       </style>
      <div>
@@ -56,9 +56,10 @@
       <input type="text" id="prompt-input" placeholder="Enter a prompt">
       <button id="generate-button">Generate Text</button>
     </div>
-    <textarea id="generated-text" rows="10" cols="50" readonly></ textarea>
+    <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
   </div>
     `;
+
   class Widget extends HTMLElement {
     constructor() {
       super();
@@ -68,9 +69,11 @@
       shadowRoot.appendChild(template.content.cloneNode(true));
       this._props = {};
     }
+
     async connectedCallback() {
       this.initMain();
     }
+
     async initMain() {
       const generatedText = this.shadowRoot.getElementById("generated-text");
       generatedText.value = "";
@@ -86,7 +89,8 @@
         const generatedText = this.shadowRoot.getElementById("generated-text");
         generatedText.value = "Finding result...";
         const prompt = promptInput.value;
-        const response = await fetch("https://api.openai.com/v1/completions", {
+
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -94,7 +98,10 @@
           },
           body: JSON.stringify({
             "model": "gpt-3.5-turbo",
-            "prompt": prompt,
+            "messages": [{
+              "role": "user",
+              "content": prompt
+            }],
             "max_tokens": parseInt(max_tokens),
             "n": 1,
             "temperature": 0.5
@@ -105,7 +112,7 @@
           const {
             choices
           } = await response.json();
-          const generatedTextValue = choices[0].text;
+          const generatedTextValue = choices[0].message.content;
           generatedText.value = generatedTextValue.replace(/^\n+/, '');
         } else {
           const error = await response.json();
@@ -114,15 +121,18 @@
         }
       });
     }
+
     onCustomWidgetBeforeUpdate(changedProperties) {
       this._props = {
         ...this._props,
         ...changedProperties
       };
     }
+
     onCustomWidgetAfterUpdate(changedProperties) {
       this.initMain();
     }
   }
+
   customElements.define("com-rohitchouhan-sap-chatgptwidget", Widget);
 })();
