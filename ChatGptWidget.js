@@ -91,14 +91,14 @@
         const prompt = promptInput.value;
 
         try {
-          const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          const response = await fetch("https://api.openai.com/v1/completions", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-3.5-turbo",  // Cambiado a gpt-4o
+              "model": "gpt-3",  // Cambiado a gpt-4o
               "messages": [{
                 "role": "user",
                 "content": prompt
