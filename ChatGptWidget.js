@@ -90,6 +90,7 @@
         generatedText.value = "Finding result...";
         const prompt = promptInput.value;
 
+        // Llama a la API usando el formato adecuado para el modelo de chat
         try {
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -98,34 +99,32 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4o",
-              "messages": [{
-                "role": "user",
-                "content": prompt
-              }],
+              "model": "gpt-3.5-turbo",
+              "messages": [
+                {
+                  "role": "user",
+                  "content": prompt
+                }
+              ],
               "max_tokens": parseInt(max_tokens),
               "temperature": 0.5
             })
           });
 
-          console.log("API Response Status: ", response.status); // Log del status de la respuesta
-
-          if (response.status === 200) {
-            const {
-              choices
-            } = await response.json();
-            console.log("API Response Choices: ", choices); // Log de la respuesta completa de la API
-            const generatedTextValue = choices[0].message.content;
+          if (response.ok) {
+            const data = await response.json();
+            // Extrae el contenido generado por el modelo
+            const generatedTextValue = data.choices[0].message.content;
             generatedText.value = generatedTextValue.replace(/^\n+/, '');
           } else {
-            const error = await response.json();
-            console.error("OpenAI Error Response: ", error); // Log del error completo
-            alert("OpenAI Response: " + error.error.message);
+            const errorData = await response.json();
+            console.error("Error from OpenAI:", errorData);
+            alert("Error from OpenAI: " + errorData.error.message);
             generatedText.value = "";
           }
         } catch (error) {
-          console.error("Request failed:", error); // Log del error en caso de que falle la solicitud
-          alert("Request failed: " + error.message);
+          console.error("Error in API request:", error);
+          alert("Error in API request: " + error.message);
         }
       });
     }
