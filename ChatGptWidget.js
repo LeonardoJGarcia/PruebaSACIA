@@ -56,7 +56,7 @@
       <input type="text" id="prompt-input" placeholder="Enter a prompt">
       <button id="generate-button">Generate Text</button>
     </div>
-    <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
+    <textarea id="generated-text" rows="10" cols="50" reado nly></textarea>
   </div>
     `;
 
@@ -79,7 +79,7 @@
       generatedText.value = "";
       const {
         apiKey
-      } = this._props || "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"; // Inserta aquí tu API Key correcta
+      } = this._props || ""; // Inserta aquí tu API Key correcta
       const {
         max_tokens
       } = this._props || 1024;
@@ -90,7 +90,6 @@
         generatedText.value = "Finding result...";
         const prompt = promptInput.value;
 
-        // Llama a la API usando el formato adecuado para el modelo de chat
         try {
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -100,31 +99,29 @@
             },
             body: JSON.stringify({
               "model": "gpt-3.5-turbo",
-              "messages": [
-                {
-                  "role": "user",
-                  "content": prompt
-                }
-              ],
+              "messages": [{
+                "role": "user",
+                "content": prompt
+              }],
               "max_tokens": parseInt(max_tokens),
               "temperature": 0.5
             })
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            // Extrae el contenido generado por el modelo
-            const generatedTextValue = data.choices[0].message.content;
+          if (response.status === 200) {
+            const responseData = await response.json();
+            console.log("API Response: ", responseData);
+            const generatedTextValue = responseData.choices[0].message.content;
             generatedText.value = generatedTextValue.replace(/^\n+/, '');
           } else {
-            const errorData = await response.json();
-            console.error("Error from OpenAI:", errorData);
-            alert("Error from OpenAI: " + errorData.error.message);
+            const error = await response.json();
+            console.error("OpenAI Error Response: ", error);
+            alert("OpenAI Response: " + error.error.message);
             generatedText.value = "";
           }
         } catch (error) {
-          console.error("Error in API request:", error);
-          alert("Error in API request: " + error.message);
+          console.error("Request failed:", error);
+          alert("Request failed: " + error.message);
         }
       });
     }
@@ -141,5 +138,5 @@
     }
   }
 
-  customElements.define("com-rohitchouhan-sap-chatgptwidget", Widget);
+  customElements.define("com-bintech-sap-chatgptwidget", Widget);
 })();
