@@ -56,7 +56,7 @@
       <input type="text" id="prompt-input" placeholder="Enter a prompt">
       <button id="generate-button">Generate Text</button>
     </div>
-    <textarea id="generated-text" rows="10" cols="50" reado nly></textarea>
+    <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
   </div>
     `;
 
@@ -98,7 +98,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-3.5-turbo",
+              "model": "gpt-4"o,  // Cambiado a gpt-4o
               "messages": [{
                 "role": "user",
                 "content": prompt
