@@ -79,7 +79,7 @@
       generatedText.value = "";
       const {
         apiKey
-      } = this._props || "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";
+      } = this._props || "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"; // Inserta aquí tu API Key correcta
       const {
         max_tokens
       } = this._props || 1024;
@@ -90,34 +90,42 @@
         generatedText.value = "Finding result...";
         const prompt = promptInput.value;
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + apiKey
-          },
-          body: JSON.stringify({
-            "model": "gpt-3.5-turbo",
-            "messages": [{
-              "role": "user",
-              "content": prompt
-            }],
-            "max_tokens": parseInt(max_tokens),
-            "n": 1,
-            "temperature": 0.5
-          })
-        });
+        try {
+          const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + apiKey
+            },
+            body: JSON.stringify({
+              "model": "gpt-3.5-turbo",
+              "messages": [{
+                "role": "user",
+                "content": prompt
+              }],
+              "max_tokens": parseInt(max_tokens),
+              "temperature": 0.5
+            })
+          });
 
-        if (response.status === 200) {
-          const {
-            choices
-          } = await response.json();
-          const generatedTextValue = choices[0].message.content;
-          generatedText.value = generatedTextValue.replace(/^\n+/, '');
-        } else {
-          const error = await response.json();
-          alert("OpenAI Response: " + error.error.message);
-          generatedText.value = "";
+          console.log("API Response Status: ", response.status); // Log del status de la respuesta
+
+          if (response.status === 200) {
+            const {
+              choices
+            } = await response.json();
+            console.log("API Response Choices: ", choices); // Log de la respuesta completa de la API
+            const generatedTextValue = choices[0].message.content;
+            generatedText.value = generatedTextValue.replace(/^\n+/, '');
+          } else {
+            const error = await response.json();
+            console.error("OpenAI Error Response: ", error); // Log del error completo
+            alert("OpenAI Response: " + error.error.message);
+            generatedText.value = "";
+          }
+        } catch (error) {
+          console.error("Request failed:", error); // Log del error en caso de que falle la solicitud
+          alert("Request failed: " + error.message);
         }
       });
     }
