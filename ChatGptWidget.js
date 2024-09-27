@@ -53,7 +53,7 @@
     <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
     <h1>ChatGPT</h1></center>
     <div class="input-container">
-      <input type="text" id="prompt-input" placeholder="Enter a prompt">
+      <input type="text" id="prompt-input" placeholder="Introduce tu búsqueda">
       <button id="generate-button">Generate Text</button>
     </div>
     <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
