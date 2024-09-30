@@ -86,14 +86,14 @@ input[type="color"]::-webkit-color-swatch {
     <tr>
     <td>
     <p>Result Max Length</p>
-    <input id="builder_max_tokens" type="number" placeholder="Enter Result Max Length">
+    <input id="builder_max_tokens" type="number" placeholder="Introduce el máximo uso de palabras por respuesta">
     </td>
     </tr>
     
     </table>
     <input value="Update Settings" type="submit">
     <br>
-    <p>Developed by <a target="_blank" href="https://linkedin.com/in/bintech">Bintech</a></p>
+    <p>Developed by <a target="_blank" href="https://www.linkedin.com/company/bintech/">Bintech</a></p>
 </form>
 `;
 
