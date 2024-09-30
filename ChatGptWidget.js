@@ -54,7 +54,7 @@
     <h1>ChatGPT</h1></center>
     <div class="input-container">
       <input type="text" id="prompt-input" placeholder="Introduce tu búsqueda">
-      <button id="generate-button">Generate Text</button>
+      <button id="generate-button">Generar respuesta</button>
     </div>
     <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
   </div>
@@ -100,7 +100,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
+              "model": "gpt-4o", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
               "messages": [
                 {
                   "role": "system",
