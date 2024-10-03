@@ -39,6 +39,11 @@
           width: 25%;
         }
 
+        /* Style for the file input */
+        #file-input {
+          margin-bottom: 10px;
+        }
+
         /* Style for the generated text area */
         #generated-text {
           padding: 10px;
@@ -53,8 +58,9 @@
     <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
     <h1>ChatGPT</h1></center>
     <div class="input-container">
-      <input type="text" id="prompt-input" placeholder="Introduce tu búsqueda">
-      <button id="generate-button">Generar respuesta</button>
+      <input type="text" id="prompt-input" placeholder="Enter a prompt">
+      <input type="file" id="file-input" accept=".csv" />
+      <button id="generate-button">Generate Text</button>
     </div>
     <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
   </div>
@@ -76,11 +82,27 @@
 
     async initMain() {
       const generatedText = this.shadowRoot.getElementById("generated-text");
-      generatedText.value = "";
       const apiKey = this._props.apiKey || ""; // Asegúrate de ingresar tu API Key correcta aquí
       const max_tokens = this._props.max_tokens || 1024;
 
       const generateButton = this.shadowRoot.getElementById("generate-button");
+      const fileInput = this.shadowRoot.getElementById("file-input");
+
+      let csvContent = "";
+
+      // Handle file upload
+      fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            csvContent = e.target.result;
+            console.log("CSV content loaded: ", csvContent); // Verify the loaded CSV content
+          };
+          reader.readAsText(file);
+        }
+      });
+
       generateButton.addEventListener("click", async () => {
         const promptInput = this.shadowRoot.getElementById("prompt-input");
         const generatedText = this.shadowRoot.getElementById("generated-text");
@@ -92,7 +114,15 @@
           return;
         }
 
+        if (!csvContent) {
+          alert("Please upload a CSV file before generating text.");
+          return;
+        }
+
         try {
+          // Combine the CSV content and user prompt into a full prompt for ChatGPT
+          const fullPrompt = `context data: ${csvContent}, Please answer the queries using the context data in less than 30 words based on the following prompt: ${prompt}`;
+
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -100,7 +130,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4o", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
+              "model": "gpt-4", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
               "messages": [
                 {
                   "role": "system",
@@ -108,7 +138,7 @@
                 },
                 {
                   "role": "user",
-                  "content": prompt
+                  "content": fullPrompt
                 }
               ],
               "max_tokens": parseInt(max_tokens),
