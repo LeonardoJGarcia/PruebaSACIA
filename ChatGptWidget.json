@@ -1,6 +1,6 @@
 {
     "id": "com.bintech.sap.chatgptwidget",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "name": "ChatGPT en SAC",
     "description": "El poder de la inteligencia artificial, ahora en SAC",
     "newInstancePrefix": "ChatGptWidget",
@@ -12,14 +12,14 @@
         {
             "kind": "main",
             "tag": "com-bintech-sap-chatgptwidget",
-            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA@1.0.1\/ChatGptWidget.js",
+            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA@1.0.3\/ChatGptWidget.js",
             "integrity": "",
             "ignoreIntegrity": true
         },
         {
             "kind": "builder",
             "tag": "com-bintech-sap-chatgptwidget-builder",
-            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA@1.0.1\/ChatGptWidget_Builder.js",
+            "url": "https:\/\/cdn.jsdelivr.net\/gh\/LeonardoJGarcia\/PruebaSACIA@1.0.3\/ChatGptWidget_Builder.js",
             "integrity": "",
             "ignoreIntegrity": true
         }
