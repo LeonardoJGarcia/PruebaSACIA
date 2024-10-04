@@ -79,19 +79,19 @@ input[type="color"]::-webkit-color-swatch {
     <table>
         <tr>
     <td>
-    <p>Api Key of ChatGPT</p>
+    <p>Api Key de ChatGPT</p>
     <input id="builder_apiKey" type="text" placeholder="Introduce tu API Key de ChatGPT">
     </td>
     </tr>
     <tr>
     <td>
-    <p>Result Max Length</p>
+    <p>MLargo máximo del resultado</p>
     <input id="builder_max_tokens" type="number" placeholder="Introduce el máximo uso de palabras por respuesta">
     </td>
     </tr>
     
     </table>
-    <input value="Update Settings" type="submit">
+    <input value="Actualizar configuración" type="submit">
     <br>
     <p>Developed by <a target="_blank" href="https://www.linkedin.com/company/bintech/">Bintech</a></p>
 </form>
