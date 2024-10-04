@@ -56,11 +56,11 @@
      <div>
     <center>
     <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
-    <h1>ChatGPT</h1></center>
+    <h1>Bintech AI</h1></center>
     <div class="input-container">
-      <input type="text" id="prompt-input" placeholder="Enter a prompt">
+      <input type="text" id="prompt-input" placeholder="Introduce tu pregunta">
       <input type="file" id="file-input" accept=".csv" />
-      <button id="generate-button">Generate Text</button>
+      <button id="generate-button">Generar respuesta</button>
     </div>
     <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
   </div>
@@ -110,7 +110,7 @@
         const prompt = promptInput.value;
 
         if (!apiKey) {
-          alert("API Key is missing! Please provide a valid API key.");
+          alert("La API key no fue encontrada! Favor de introducir una API Key válida.");
           return;
         }
 
@@ -130,7 +130,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "text-embedding-3-small", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
+              "model": "gpt-4o", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
               "messages": [
                 {
                   "role": "system",
