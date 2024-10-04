@@ -130,7 +130,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
+              "model": "gpt-4o", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
               "messages": [
                 {
                   "role": "system",
