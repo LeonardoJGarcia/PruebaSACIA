@@ -39,13 +39,18 @@
           width: 25%;
         }
 
-        /* Style for the file input */
-        #file-input {
-          margin-bottom: 10px;
+        /* Style for the select input */
+        #sac-model-select {
+          padding: 10px;
+          font-size: 16px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          width: 70%;
+          margin-bottom: 20px;
         }
 
-        /* Style for the model selector */
-        #model-select {
+        /* Style for the file input */
+        #file-input {
           margin-bottom: 10px;
         }
 
@@ -63,13 +68,13 @@
     <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
     <h1>ChatGPT</h1></center>
     <div class="input-container">
-      <input type="text" id="prompt-input" placeholder="Introduce la pregunta">
-      <select id="model-select">
-        <option value="">Selecciona el modelo de SAC</option>
-        <!-- Model options will be dynamically populated here -->
+      <select id="sac-model-select">
+        <option value="">Select SAC Model</option>
+        <!-- Options will be populated dynamically -->
       </select>
+      <input type="text" id="prompt-input" placeholder="Enter a prompt">
       <input type="file" id="file-input" accept=".csv" />
-      <button id="generate-button">Generar Respuesta</button>
+      <button id="generate-button">Generate Text</button>
     </div>
     <textarea id="generated-text" rows="10" cols="50" readonly></textarea>
   </div>
@@ -94,23 +99,43 @@
       const apiKey = this._props.apiKey || ""; // Asegúrate de ingresar tu API Key correcta aquí
       const max_tokens = this._props.max_tokens || 1024;
 
-      const generateButton = this.shadowRoot.getElementById("generate-button");
+      const sacModelSelect = this.shadowRoot.getElementById("sac-model-select");
       const fileInput = this.shadowRoot.getElementById("file-input");
-      const modelSelect = this.shadowRoot.getElementById("model-select");
+      const generateButton = this.shadowRoot.getElementById("generate-button");
 
       let csvContent = "";
-      let sacModelContent = "";
+      let sacModelData = "";
 
-      // Obtener los modelos de SAC (Simulación)
-      this.loadSACModels(modelSelect);
+      // Cargar modelos disponibles en SAC
+      async function loadSACModels() {
+        const models = await sap.m.getAvailableModels(); // Usar API de SAC para obtener modelos disponibles
+        models.forEach((model) => {
+          const option = document.createElement("option");
+          option.value = model.id;
+          option.text = model.description;
+          sacModelSelect.appendChild(option);
+        });
+      }
 
-      // Función para limitar el contenido del CSV a las primeras 100 líneas
+      // Llamar a la función para cargar los modelos disponibles
+      loadSACModels();
+
+      // Función para obtener datos de un modelo de SAC seleccionado
+      async function loadSACModelData(modelId) {
+        if (modelId) {
+          const model = sap.m.getModel(modelId); // Obtén el modelo seleccionado
+          const data = await model.getResultSet(); // Obtén los datos del modelo
+          sacModelData = JSON.stringify(data); // Convertir a formato JSON para enviarlo como parte del prompt
+        }
+      }
+
+      // Limitar el contenido del CSV a las primeras 100 líneas
       function limitCSVContent(csv, maxLines = 100) {
         const lines = csv.split("\n");
         return lines.slice(0, maxLines).join("\n");
       }
 
-      // Manejo de la carga de archivos
+      // Manejo de la carga de archivos CSV
       fileInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -124,19 +149,11 @@
         }
       });
 
-      // Evento cuando se selecciona un modelo de SAC
-      modelSelect.addEventListener("change", async (event) => {
-        const selectedModel = modelSelect.value;
-        if (selectedModel) {
-          // Simulación: Obtener los datos del modelo seleccionado
-          sacModelContent = await this.getSACModelData(selectedModel);
-          console.log("SAC Model content loaded: ", sacModelContent);
-        }
-      });
-
+      // Manejo del evento de clic para generar texto
       generateButton.addEventListener("click", async () => {
         const promptInput = this.shadowRoot.getElementById("prompt-input");
         const generatedText = this.shadowRoot.getElementById("generated-text");
+        const selectedModelId = sacModelSelect.value;
         generatedText.value = "Buscando resultado...";
         const prompt = promptInput.value;
 
@@ -145,16 +162,21 @@
           return;
         }
 
-        // Prioridad a cargar desde un modelo de SAC
-        let contextData = sacModelContent || csvContent;
-
-        if (!contextData) {
+        // Verificar si se cargó un archivo CSV o se seleccionó un modelo de SAC
+        if (!csvContent && !selectedModelId) {
           alert("Please upload a CSV file or select a SAC model before generating text.");
           return;
         }
 
+        // Cargar los datos del modelo de SAC seleccionado si está presente
+        if (selectedModelId) {
+          await loadSACModelData(selectedModelId);
+        }
+
+        const contextData = csvContent || sacModelData;
+
         try {
-          // Combinar el contenido del CSV o modelo de SAC y el prompt del usuario
+          // Combinar el contenido del CSV o datos de SAC y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Please answer the queries using the context data in less than 30 words based on the following prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -196,34 +218,6 @@
           alert("Request failed: " + error.message);
         }
       });
-    }
-
-    // Simulación de la carga de modelos SAC
-    async loadSACModels(modelSelect) {
-      // Aquí deberías obtener la lista de modelos desde SAP SAC
-      // Por ahora, lo simulo con modelos estáticos
-      const models = [
-        { id: "model1", name: "Sales Model" },
-        { id: "model2", name: "Finance Model" }
-      ];
-
-      models.forEach(model => {
-        const option = document.createElement("option");
-        option.value = model.id;
-        option.textContent = model.name;
-        modelSelect.appendChild(option);
-      });
-    }
-
-    // Simulación de la obtención de datos desde un modelo de SAC
-    async getSACModelData(modelId) {
-      // Simula datos de modelos de SAC en formato CSV
-      const modelData = {
-        model1: "Name,Sales,Region\nJohn,1000,North\nJane,2000,South\n",
-        model2: "Account,Balance,Date\nCash,10000,2023-01-01\nCredit,5000,2023-02-01\n"
-      };
-
-      return modelData[modelId] || "";
     }
 
     onCustomWidgetBeforeUpdate(changedProperties) {
