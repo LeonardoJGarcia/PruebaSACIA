@@ -206,7 +206,7 @@
 
         try {
           // Combinar el contenido (CSV o modelo de SAC) y el prompt del usuario
-          const fullPrompt = `context data: ${contextData}, Please answer the queries using the context data in less than 30 words based on the following prompt: ${prompt}`;
+          const fullPrompt = `context data: ${contextData}, You are an SAP Analytics Cloud Consultant, please answer the queries using the context data in less than 30 words based on the following prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
