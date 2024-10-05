@@ -28,7 +28,6 @@
         }
 
         .input-container input, 
-        .input-container select, 
         .input-container textarea {
           padding: 10px;
           font-size: 16px;
@@ -69,18 +68,9 @@
           <h1>Bintech AI</h1>
         </center>
 
-        <!-- Section for selecting a SAC model -->
-        <div class="input-container">
-          <label for="model-select">Seleccionar Modelo de SAC:</label>
-          <select id="model-select">
-            <option value="">-- Selecciona un modelo --</option>
-          </select>
-          <button id="load-model-button">Cargar Datos del Modelo</button>
-        </div>
-
         <!-- Section for file upload (CSV) -->
         <div class="input-container">
-          <label for="file-input">O carga un archivo CSV:</label>
+          <label for="file-input">Carga un archivo CSV (opcional):</label>
           <input type="file" id="file-input" accept=".csv" />
         </div>
 
@@ -119,57 +109,14 @@
 
       const generateButton = this.shadowRoot.getElementById("generate-button");
       const fileInput = this.shadowRoot.getElementById("file-input");
-      const modelSelect = this.shadowRoot.getElementById("model-select");
-      const loadModelButton = this.shadowRoot.getElementById("load-model-button");
 
       let csvContent = "";
-      let sacModelContent = "";
 
       // Función para limitar el contenido del CSV a las primeras 100 líneas
       function limitCSVContent(csv, maxLines = 100) {
         const lines = csv.split("\n");
         return lines.slice(0, maxLines).join("\n");
       }
-
-      // Función para cargar los modelos de datos desde SAC
-      async function loadModelsFromSAC() {
-        try {
-          const models = await sap.fpa.ui.story.getAvailableDataSources(); // Obtener modelos disponibles
-          models.forEach(model => {
-            const option = document.createElement("option");
-            option.value = model.id;
-            option.text = model.label;
-            modelSelect.appendChild(option);
-          });
-        } catch (error) {
-          console.error("Error loading models from SAC:", error);
-        }
-      }
-
-      // Función para cargar datos del modelo seleccionado en SAC
-      async function loadModelData(modelId) {
-        try {
-          const dataSource = await sap.fpa.ui.story.getDataSource(modelId); // Cargar el modelo
-          const resultSet = await dataSource.getResultSet(); // Obtener los datos del modelo
-          sacModelContent = JSON.stringify(resultSet); // Convertir los datos del modelo a formato JSON
-          console.log("SAC model content:", sacModelContent);
-        } catch (error) {
-          console.error("Error loading model data:", error);
-        }
-      }
-
-      // Llamada para cargar los modelos al cargar el widget
-      await loadModelsFromSAC();
-
-      // Manejo del botón para cargar datos del modelo seleccionado
-      loadModelButton.addEventListener("click", async () => {
-        const selectedModelId = modelSelect.value;
-        if (selectedModelId) {
-          await loadModelData(selectedModelId);
-        } else {
-          alert("Por favor selecciona un modelo para cargar.");
-        }
-      });
 
       // Manejo de la carga de archivos CSV
       fileInput.addEventListener("change", (event) => {
@@ -197,15 +144,11 @@
           return;
         }
 
-        // Definir el contenido del contexto basado en el CSV o el modelo de SAC cargado
-        let contextData = csvContent || sacModelContent;
-        if (!contextData) {
-          alert("Por favor, carga un archivo CSV o selecciona un modelo de SAC.");
-          return;
-        }
+        // Definir el contenido del contexto basado en el CSV o solo el prompt si no hay CSV
+        let contextData = csvContent || "Sin datos de CSV cargados.";
 
         try {
-          // Combinar el contenido (CSV o modelo de SAC) y el prompt del usuario
+          // Combinar el contenido (CSV si está presente) y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
