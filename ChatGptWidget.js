@@ -109,8 +109,12 @@
         }
 
         try {
-          // Obtener el contexto de datos desde SAC para cualquier tabla en la historia
+          // Obtener el contexto de datos desde SAC para la tabla "Table_1"
           let contextData = await this.getSACDataAsCSV();
+
+          if (!contextData) {
+            throw new Error("No se pudo generar el CSV con los datos de la tabla.");
+          }
 
           // Combinar el contenido del contexto (datos de SAC) y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
@@ -156,44 +160,47 @@
       });
     }
 
-    // Función para obtener los datos de cualquier tabla en la historia y generar CSV dinámico
+    // Función para obtener los datos de la tabla "Table_1" y generar CSV
     async getSACDataAsCSV() {
       try {
-        // Obtener la historia activa
         const story = sap.fpa.ui.story.getActiveStory();
-        const pages = story.getPages();
+        const page1 = story.getPages()[0]; // Acceder a la página 1
+        const tableWidget = page1.getWidgets().find(widget => widget.name === "Table_1");
 
-        // Buscar todas las tablas en la historia
-        let csvContent = "";
-        for (const page of pages) {
-          const widgets = page.getWidgets();
-          const tableWidgets = widgets.filter(widget => widget.type === "table");
-
-          for (const tableWidget of tableWidgets) {
-            const dataSource = tableWidget.getDataSource();
-            const members = await dataSource.getMembers("name"); // Obtener los miembros de la tabla
-            const resultSet = await dataSource.getResultSet(); // Obtener los resultados de la tabla
-
-            // Generar CSV dinámico
-            let headers = Object.keys(resultSet[0]); // Encabezados dinámicos
-            csvContent += headers.join(",") + "\n";
-
-            members.forEach(member => {
-              let row = [member.id]; // Inicia la fila con el ID del miembro
-              headers.forEach(header => {
-                const cell = resultSet.find(data => data[header].id === member.id);
-                row.push(cell ? cell.rawValue : ""); // Añadir el valor o vacío si no existe
-              });
-              csvContent += row.join(",") + "\n";
-            });
-          }
+        if (!tableWidget) {
+          console.error("La tabla 'Table_1' no se encontró en la página.");
+          return null;
         }
+
+        const dataSource = tableWidget.getDataSource();
+        const members = await dataSource.getMembers("name");
+        const resultSet = await dataSource.getResultSet();
+
+        if (resultSet.length === 0) {
+          console.error("No se encontraron datos en la tabla.");
+          return null;
+        }
+
+        // Generar CSV dinámico
+        let csvContent = "";
+        let headers = Object.keys(resultSet[0]); // Obtener los encabezados dinámicamente
+
+        csvContent += headers.join(",") + "\n"; // Añadir encabezados al CSV
+
+        members.forEach(member => {
+          let row = [member.id];
+          headers.forEach(header => {
+            const cell = resultSet.find(data => data[header].id === member.id);
+            row.push(cell ? cell.rawValue : ""); // Añadir valor o vacío
+          });
+          csvContent += row.join(",") + "\n";
+        });
 
         console.log("Generated CSV from SAC data:", csvContent);
         return csvContent;
       } catch (error) {
         console.error("Error al obtener datos de SAC:", error);
-        return "";
+        return null;
       }
     }
 
