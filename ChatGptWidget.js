@@ -2,35 +2,34 @@
   let template = document.createElement("template");
   template.innerHTML = `
       <style>
-        :host {}
-
-        /* Style for the container */
-        div {
-          margin: 20px auto;
-          max-width: 800px;
-          padding: 20px;
+        :host {
+          display: block;
           font-family: Arial, sans-serif;
         }
 
-        h1 {
-          text-align: center;
-          color: #3cb6a9;
+        .container {
+          margin: 20px auto;
+          max-width: 600px;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 10px;
+          background-color: #f9f9f9;
         }
 
-        /* Style for the input container */
         .input-container {
           display: flex;
           flex-direction: column;
           margin-bottom: 20px;
         }
 
-        /* Style for the select container */
-        .select-container {
-          margin-bottom: 20px;
+        .input-container label {
+          margin-bottom: 5px;
+          font-weight: bold;
         }
 
-        /* Style for the input field */
-        #prompt-input, #model-select, #file-input {
+        .input-container input, 
+        .input-container select, 
+        .input-container textarea {
           padding: 10px;
           font-size: 16px;
           border: 1px solid #ccc;
@@ -38,7 +37,10 @@
           margin-bottom: 10px;
         }
 
-        /* Style for the button */
+        #file-input {
+          margin-top: 10px;
+        }
+
         #generate-button {
           padding: 10px;
           font-size: 16px;
@@ -47,43 +49,53 @@
           border: none;
           border-radius: 5px;
           cursor: pointer;
+          margin-top: 10px;
         }
 
-        /* Style for the generated text area */
         #generated-text {
-          padding: 10px;
+          width: 100%;
+          height: 150px;
           font-size: 16px;
+          padding: 10px;
           border: 1px solid #ccc;
           border-radius: 5px;
-          width: 96%;
-          height: 150px;
-          resize: none;
-        }
-
-        .section-title {
-          font-weight: bold;
-          margin-bottom: 5px;
+          background-color: #fff;
         }
       </style>
-     <div>
-      <h1>ChatGPT Widget</h1>
-      <div class="select-container">
-        <div class="section-title">Select a SAC Model:</div>
-        <select id="model-select">
-          <option value="">-- Select Model from SAC --</option>
-        </select>
+
+      <div class="container">
+        <center>
+          <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
+          <h1>Bintech AI</h1>
+        </center>
+
+        <!-- Section for selecting a SAC model -->
+        <div class="input-container">
+          <label for="model-select">Seleccionar Modelo de SAC:</label>
+          <select id="model-select">
+            <option value="">-- Selecciona un modelo --</option>
+          </select>
+          <button id="load-model-button">Cargar Datos del Modelo</button>
+        </div>
+
+        <!-- Section for file upload (CSV) -->
+        <div class="input-container">
+          <label for="file-input">O carga un archivo CSV:</label>
+          <input type="file" id="file-input" accept=".csv" />
+        </div>
+
+        <!-- Section for prompt input -->
+        <div class="input-container">
+          <label for="prompt-input">Ingresa un prompt:</label>
+          <input type="text" id="prompt-input" placeholder="Ingresa un prompt" />
+        </div>
+
+        <!-- Generate button -->
+        <button id="generate-button">Generar Texto</button>
+
+        <!-- Textarea for generated text -->
+        <textarea id="generated-text" readonly></textarea>
       </div>
-      <div class="input-container">
-        <div class="section-title">Or Upload a CSV File:</div>
-        <input type="file" id="file-input" accept=".csv" />
-      </div>
-      <div class="input-container">
-        <div class="section-title">Enter Your Prompt:</div>
-        <input type="text" id="prompt-input" placeholder="Enter a prompt">
-      </div>
-      <button id="generate-button">Generate Text</button>
-      <textarea id="generated-text" readonly></textarea>
-    </div>
     `;
 
   class Widget extends HTMLElement {
@@ -104,15 +116,14 @@
       const generatedText = this.shadowRoot.getElementById("generated-text");
       const apiKey = this._props.apiKey || ""; // Asegúrate de ingresar tu API Key correcta aquí
       const max_tokens = this._props.max_tokens || 1024;
-      const modelSelect = this.shadowRoot.getElementById("model-select");
-      const fileInput = this.shadowRoot.getElementById("file-input");
+
       const generateButton = this.shadowRoot.getElementById("generate-button");
+      const fileInput = this.shadowRoot.getElementById("file-input");
+      const modelSelect = this.shadowRoot.getElementById("model-select");
+      const loadModelButton = this.shadowRoot.getElementById("load-model-button");
 
       let csvContent = "";
-      let sacModelData = "";
-
-      // Cargar modelos de SAC disponibles
-      this.loadSACModels(modelSelect);
+      let sacModelContent = "";
 
       // Función para limitar el contenido del CSV a las primeras 100 líneas
       function limitCSVContent(csv, maxLines = 100) {
@@ -120,7 +131,47 @@
         return lines.slice(0, maxLines).join("\n");
       }
 
-      // Manejo de la carga de archivos
+      // Función para cargar los modelos de datos desde SAC
+      async function loadModelsFromSAC() {
+        try {
+          const models = await sap.fpa.ui.story.getAvailableDataSources(); // Obtener modelos disponibles
+          models.forEach(model => {
+            const option = document.createElement("option");
+            option.value = model.id;
+            option.text = model.label;
+            modelSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error loading models from SAC:", error);
+        }
+      }
+
+      // Función para cargar datos del modelo seleccionado en SAC
+      async function loadModelData(modelId) {
+        try {
+          const dataSource = await sap.fpa.ui.story.getDataSource(modelId); // Cargar el modelo
+          const resultSet = await dataSource.getResultSet(); // Obtener los datos del modelo
+          sacModelContent = JSON.stringify(resultSet); // Convertir los datos del modelo a formato JSON
+          console.log("SAC model content:", sacModelContent);
+        } catch (error) {
+          console.error("Error loading model data:", error);
+        }
+      }
+
+      // Llamada para cargar los modelos al cargar el widget
+      await loadModelsFromSAC();
+
+      // Manejo del botón para cargar datos del modelo seleccionado
+      loadModelButton.addEventListener("click", async () => {
+        const selectedModelId = modelSelect.value;
+        if (selectedModelId) {
+          await loadModelData(selectedModelId);
+        } else {
+          alert("Por favor selecciona un modelo para cargar.");
+        }
+      });
+
+      // Manejo de la carga de archivos CSV
       fileInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -128,22 +179,13 @@
           reader.onload = (e) => {
             csvContent = e.target.result;
             csvContent = limitCSVContent(csvContent); // Limitar a las primeras 100 líneas
-            sacModelData = ""; // Reiniciar el modelo de SAC cuando se sube un CSV
             console.log("CSV content loaded: ", csvContent); // Verifica el contenido CSV cargado
           };
           reader.readAsText(file);
         }
       });
 
-      // Manejo de la selección de modelos de SAC
-      modelSelect.addEventListener("change", async () => {
-        const selectedModel = modelSelect.value;
-        if (selectedModel) {
-          sacModelData = await this.loadSACModelData(selectedModel);
-          csvContent = ""; // Reiniciar el CSV cuando se selecciona un modelo de SAC
-        }
-      });
-
+      // Manejo del botón de generación de texto
       generateButton.addEventListener("click", async () => {
         const promptInput = this.shadowRoot.getElementById("prompt-input");
         const generatedText = this.shadowRoot.getElementById("generated-text");
@@ -155,14 +197,16 @@
           return;
         }
 
-        if (!csvContent && !sacModelData) {
-          alert("Please either select a SAC model or upload a CSV file.");
+        // Definir el contenido del contexto basado en el CSV o el modelo de SAC cargado
+        let contextData = csvContent || sacModelContent;
+        if (!contextData) {
+          alert("Por favor, carga un archivo CSV o selecciona un modelo de SAC.");
           return;
         }
 
         try {
-          const contextData = sacModelData || csvContent;
-          const fullPrompt = `context data: ${contextData}, Please answer the queries using the context data in less than 30 words based on the following prompt: ${prompt}`;
+          // Combinar el contenido (CSV o modelo de SAC) y el prompt del usuario
+          const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -175,7 +219,7 @@
               "messages": [
                 {
                   "role": "system",
-                  "content": "You are a helpful assistant."
+                  "content": "Eres un asistente útil."
                 },
                 {
                   "role": "user",
@@ -203,33 +247,6 @@
           alert("Request failed: " + error.message);
         }
       });
-    }
-
-    async loadSACModels(modelSelect) {
-      // Obtener los modelos dentro de la historia de SAC
-      let models = await sap.fpa.ui.story.getModels(); // Devuelve los modelos disponibles en la historia
-      if (models && models.length > 0) {
-        models.forEach(model => {
-          const option = document.createElement("option");
-          option.value = model.id;
-          option.text = model.name;
-          modelSelect.appendChild(option);
-        });
-      }
-    }
-
-    async loadSACModelData(modelId) {
-      // Obtener los datos del modelo seleccionado
-      const dataSource = sap.fpa.ui.story.getDataSource(modelId);
-      const members = await dataSource.getMembers("name"); // Obtener los miembros de la dimensión
-      const resultSet = await dataSource.getResultSet(); // Obtener el conjunto de resultados
-      let stringCSV = "Name,Value\n"; // Formato de CSV
-      members.forEach(member => {
-        const name = member.id;
-        const value = resultSet.find(result => result.name === name).value;
-        stringCSV += `${name},${value}\n`;
-      });
-      return stringCSV;
     }
 
     onCustomWidgetBeforeUpdate(changedProperties) {
