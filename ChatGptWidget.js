@@ -109,7 +109,7 @@
         }
 
         try {
-          // Obtener el contexto de datos desde SAC (código adaptado para acceder a los datos)
+          // Obtener el contexto de datos desde SAC para la tabla "Table_1"
           let contextData = await this.getSACDataAsCSV();
 
           // Combinar el contenido del contexto (datos de SAC) y el prompt del usuario
@@ -122,7 +122,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4", // Cambia a "gpt-3.5-turbo" si no tienes acceso a gpt-4
+              "model": "gpt-4o", // Uso del modelo gpt-4o
               "messages": [
                 {
                   "role": "system",
@@ -156,42 +156,48 @@
       });
     }
 
-    // Función para obtener los datos de cualquier tabla en formato CSV
+    // Función para obtener los datos de la tabla "Table_1" en la página 1 de la historia
     async getSACDataAsCSV() {
       try {
-        const dataSource = await sap.fpa.ui.story.getDataSource("Table_1"); // Obtener la fuente de datos de la tabla
-        const nameDim = await dataSource.getMembers("name"); // Obtener los miembros de la dimensión de nombre
-        const accData = await dataSource.getResultSet(); // Obtener el conjunto de resultados (valores)
+        // Obtener la historia activa y acceder a la página 1
+        const story = sap.fpa.ui.story.getActiveStory();
+        const page1 = story.getPages()[0]; // Página 1 de la historia
 
-        // Generar CSV dinámico con los encabezados y valores de la tabla
-        let stringCSV = ""; 
-        let headers = [];
+        // Obtener el widget de la tabla con el nombre "Table_1"
+        const tableWidget = page1.getWidgets().find(widget => widget.name === "Table_1");
 
-        // Obtener los encabezados dinámicamente
-        if (accData.length > 0) {
-          headers = Object.keys(accData[0]); // Obtener los nombres de las columnas (encabezados) dinámicamente
-          stringCSV += headers.join(",") + "\n"; // Crear la primera línea del CSV con los encabezados
+        if (!tableWidget) {
+          throw new Error('No se encontró la tabla "Table_1" en la página 1.');
         }
 
-        // Generar el contenido del CSV
-        for (let i = 1; i < nameDim.length; i++) {
-          let name = nameDim[i].id;
-          let row = [name]; // Comienza la fila con el nombre
+        // Obtener el modelo de datos de la tabla
+        const dataSource = tableWidget.getDataSource();
 
-          // Recorrer los datos y agregar los valores
-          for (let j = 0; j < accData.length; j++) {
-            if (accData[j]["name"].id === name) {
-              headers.forEach(header => {
-                row.push(accData[j][header]?.rawValue || ""); // Añadir el valor o un vacío si no existe
-              });
-            }
-          }
+        // Obtener los miembros de la dimensión
+        const members = await dataSource.getMembers("name");
 
-          stringCSV += row.join(",") + "\n"; // Añadir la fila al CSV
-        }
+        // Obtener el conjunto de resultados (datos)
+        const resultSet = await dataSource.getResultSet();
 
-        console.log("Generated CSV from SAC data:", stringCSV);
-        return stringCSV;
+        // Generar CSV dinámico con los encabezados y valores
+        let csvContent = "";
+        let headers = Object.keys(resultSet[0]); // Encabezados dinámicos
+
+        // Agregar encabezados al CSV
+        csvContent += headers.join(",") + "\n";
+
+        // Recorrer los datos para generar el CSV
+        members.forEach(member => {
+          let row = [member.id]; // Inicia la fila con el ID del miembro
+          headers.forEach(header => {
+            const cell = resultSet.find(data => data[header].id === member.id);
+            row.push(cell ? cell.rawValue : ""); // Añadir el valor o vacío si no existe
+          });
+          csvContent += row.join(",") + "\n";
+        });
+
+        console.log("Generated CSV from SAC data:", csvContent);
+        return csvContent;
       } catch (error) {
         console.error("Error al obtener datos de SAC:", error);
         return "";
