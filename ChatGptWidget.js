@@ -27,17 +27,12 @@
           font-weight: bold;
         }
 
-        .input-container input, 
-        .input-container textarea {
+        .input-container input {
           padding: 10px;
           font-size: 16px;
           border: 1px solid #ccc;
           border-radius: 5px;
           margin-bottom: 10px;
-        }
-
-        #file-input {
-          margin-top: 10px;
         }
 
         #generate-button {
@@ -67,12 +62,6 @@
           <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
           <h1>Bintech AI</h1>
         </center>
-
-        <!-- Section for file upload (CSV) -->
-        <div class="input-container">
-          <label for="file-input">Carga un archivo CSV (opcional):</label>
-          <input type="file" id="file-input" accept=".csv" />
-        </div>
 
         <!-- Section for prompt input -->
         <div class="input-container">
@@ -106,33 +95,8 @@
       const generatedText = this.shadowRoot.getElementById("generated-text");
       const apiKey = this._props.apiKey || ""; // Asegúrate de ingresar tu API Key correcta aquí
       const max_tokens = this._props.max_tokens || 1024;
-
       const generateButton = this.shadowRoot.getElementById("generate-button");
-      const fileInput = this.shadowRoot.getElementById("file-input");
 
-      let csvContent = "";
-
-      // Función para limitar el contenido del CSV a las primeras 100 líneas
-      function limitCSVContent(csv, maxLines = 100) {
-        const lines = csv.split("\n");
-        return lines.slice(0, maxLines).join("\n");
-      }
-
-      // Manejo de la carga de archivos CSV
-      fileInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            csvContent = e.target.result;
-            csvContent = limitCSVContent(csvContent); // Limitar a las primeras 100 líneas
-            console.log("CSV content loaded: ", csvContent); // Verifica el contenido CSV cargado
-          };
-          reader.readAsText(file);
-        }
-      });
-
-      // Manejo del botón de generación de texto
       generateButton.addEventListener("click", async () => {
         const promptInput = this.shadowRoot.getElementById("prompt-input");
         const generatedText = this.shadowRoot.getElementById("generated-text");
@@ -144,11 +108,11 @@
           return;
         }
 
-        // Definir el contenido del contexto basado en el CSV o solo el prompt si no hay CSV
-        let contextData = csvContent || "Sin datos de CSV cargados.";
-
         try {
-          // Combinar el contenido (CSV si está presente) y el prompt del usuario
+          // Obtener el contexto de datos desde SAC (código adaptado para acceder a los datos)
+          let contextData = await this.getSACDataAsCSV();
+
+          // Combinar el contenido del contexto (datos de SAC) y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -190,6 +154,48 @@
           alert("Request failed: " + error.message);
         }
       });
+    }
+
+    // Función para obtener los datos de cualquier tabla en formato CSV
+    async getSACDataAsCSV() {
+      try {
+        const dataSource = await sap.fpa.ui.story.getDataSource("Table_1"); // Obtener la fuente de datos de la tabla
+        const nameDim = await dataSource.getMembers("name"); // Obtener los miembros de la dimensión de nombre
+        const accData = await dataSource.getResultSet(); // Obtener el conjunto de resultados (valores)
+
+        // Generar CSV dinámico con los encabezados y valores de la tabla
+        let stringCSV = ""; 
+        let headers = [];
+
+        // Obtener los encabezados dinámicamente
+        if (accData.length > 0) {
+          headers = Object.keys(accData[0]); // Obtener los nombres de las columnas (encabezados) dinámicamente
+          stringCSV += headers.join(",") + "\n"; // Crear la primera línea del CSV con los encabezados
+        }
+
+        // Generar el contenido del CSV
+        for (let i = 1; i < nameDim.length; i++) {
+          let name = nameDim[i].id;
+          let row = [name]; // Comienza la fila con el nombre
+
+          // Recorrer los datos y agregar los valores
+          for (let j = 0; j < accData.length; j++) {
+            if (accData[j]["name"].id === name) {
+              headers.forEach(header => {
+                row.push(accData[j][header]?.rawValue || ""); // Añadir el valor o un vacío si no existe
+              });
+            }
+          }
+
+          stringCSV += row.join(",") + "\n"; // Añadir la fila al CSV
+        }
+
+        console.log("Generated CSV from SAC data:", stringCSV);
+        return stringCSV;
+      } catch (error) {
+        console.error("Error al obtener datos de SAC:", error);
+        return "";
+      }
     }
 
     onCustomWidgetBeforeUpdate(changedProperties) {
