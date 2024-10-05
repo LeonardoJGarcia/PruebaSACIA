@@ -59,7 +59,8 @@
 
       <div class="container">
         <center>
-          <h1>Bintech AI - Vacaciones 2023</h1>
+          <img src="https://1000logos.net/wp-content/uploads/2023/02/ChatGPT-Emblem.png" width="200"/>
+          <h1>Bintech AI</h1>
         </center>
 
         <!-- Section for prompt input -->
@@ -108,10 +109,10 @@
         }
 
         try {
-          // Obtener el contexto de datos desde el archivo CSV de vacaciones
+          // Obtener el contexto de datos desde el archivo CSV cargado
           let contextData = await this.getCSVData();
 
-          // Combinar el contenido del contexto (datos del archivo CSV) y el prompt del usuario
+          // Combinar el contenido del contexto (datos del CSV) y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -121,7 +122,7 @@
               "Authorization": "Bearer " + apiKey
             },
             body: JSON.stringify({
-              "model": "gpt-4o", // Uso del modelo gpt-4o
+              "model": "gpt-4o", // Uso del modelo GPT-4o
               "messages": [
                 {
                   "role": "system",
@@ -155,41 +156,13 @@
       });
     }
 
-    // Función para obtener los datos del archivo CSV de vacaciones y generar un CSV dinámico
+    // Función para leer y procesar el archivo CSV cargado en SAC
     async getCSVData() {
-      try {
-        // Esta función debería obtener los datos de tu archivo CSV
-        // Por ejemplo, puede recibir los datos desde un servicio API o subirlos desde un archivo
-        const data = [
-          {
-            "EMPLEADO": "CARRION ABURTO SERGIO ALFREDO DE JESUS",
-            "FECHA_DE_ENTRADA": "16/09/2018",
-            "ANIVERSARIO": "16/09/2023",
-            "DIAS_VACACIONES_2023": 20,
-            "DIAS_PENDIENTES_2022": 12
-          },
-          {
-            "EMPLEADO": "DAVILA FERREIRA SAMUEL DE JESUS",
-            "FECHA_DE_ENTRADA": "18/04/2022",
-            "ANIVERSARIO": "18/04/2023",
-            "DIAS_VACACIONES_2023": 12,
-            "DIAS_PENDIENTES_2022": null
-          }
-          // Agrega el resto de los empleados
-        ];
+      // Simulación de lectura del archivo CSV cargado
+      const csvData = `EMPLEADO,FECHA DE ENTRADA,ANIVERSARIO,DIAS DE VACACIONES 2023,DIAS PENDIENTES DE TOMAR 2022\nCARRION ABURTO SERGIO ALFREDO DE JESUS,16/09/2018,16/09/2023,20,12\nDAVILA FERREIRA SAMUEL DE JESUS,18/04/2022,18/04/2023,12,\nALVAREZ ALVAREZ LUIS ANGEL,01/06/2022,01/06/2023,12,\nBAUTISTA MEDRANO MARIA CRISTINA,01/08/2022,01/08/2023,12,\nSEVILLA BETANCOURT ANA LAURA,01/09/2022,01/09/2023,12,`;
 
-        let csvContent = "EMPLEADO,FECHA_DE_ENTRADA,ANIVERSARIO,DIAS_VACACIONES_2023,DIAS_PENDIENTES_2022\n";
-
-        data.forEach(item => {
-          csvContent += `${item.EMPLEADO},${item.FECHA_DE_ENTRADA},${item.ANIVERSARIO},${item.DIAS_VACACIONES_2023},${item.DIAS_PENDIENTES_2022}\n`;
-        });
-
-        console.log("Generated CSV from Vacaciones 2023 data:", csvContent);
-        return csvContent;
-      } catch (error) {
-        console.error("Error al generar CSV:", error);
-        return null;
-      }
+      console.log("CSV data loaded:", csvData); // Verifica los datos cargados
+      return csvData; // Devuelve los datos CSV como contexto
     }
 
     onCustomWidgetBeforeUpdate(changedProperties) {
@@ -204,5 +177,5 @@
     }
   }
 
-  customElements.define("com-bintech-sap-chatgptwidget-vacaciones", Widget);
+  customElements.define("com-bintech-sap-chatgptwidget", Widget);
 })();
