@@ -159,8 +159,18 @@
     // Función para obtener los datos de la tabla "Table_1" en la página de la historia
     async getSACDataAsCSV() {
       try {
-        // Obtener la tabla "Table_1"
-        const dataSource = Table_1.getDataSource();
+        // Obtener la historia activa
+        const story = sap.fpa.ui.story.getActiveStory();
+
+        // Obtener el widget de la tabla llamado "Table_1"
+        const tableWidget = story.getWidgets().find(widget => widget.name === "Table_1");
+
+        if (!tableWidget) {
+          throw new Error('No se encontró la tabla "Table_1".');
+        }
+
+        // Obtener el modelo de datos de la tabla
+        const dataSource = tableWidget.getDataSource();
 
         // Obtener los miembros de la dimensión
         const nameDim = await dataSource.getMembers("name");
