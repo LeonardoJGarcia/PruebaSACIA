@@ -109,10 +109,10 @@
         }
 
         try {
-          // Obtener el contexto de datos desde la tabla de SAC
-          let contextData = await this.getSACDataAsCSV();
+          // Obtener el contexto de datos desde el archivo CSV cargado
+          let contextData = await this.getCSVData();
 
-          // Combinar el contenido del contexto (datos de la tabla) y el prompt del usuario
+          // Combinar el contenido del contexto (datos del CSV) y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -156,54 +156,17 @@
       });
     }
 
-    // Función para obtener datos de la tabla de SAC y generar el CSV dinámicamente
-    async getSACDataAsCSV() {
-      try {
-        // Obtener la historia activa y acceder a la página con "Table_1"
-        const story = sap.fpa.ui.story.getActiveStory();
-        const page1 = story.getPages()[0]; // Asegurarse de que estamos en la página correcta
+    // Función para leer y procesar los archivos CSV cargados
+    async getCSVData() {
+      // Simulación de lectura de los dos archivos CSV
+      const csvData1 = `...`; // Aquí irá el contenido procesado de DATOS WALMEX 1.csv
+      const csvData2 = `...`; // Aquí irá el contenido procesado de DATOS WALMEX 2.csv
 
-        // Obtener el widget de la tabla "Table_1"
-        const tableWidget = page1.getWidgets().find(widget => widget.name === "Table_1");
+      // Combina los datos de ambos archivos CSV en un solo string
+      const combinedCSV = csvData1 + "\n" + csvData2;
 
-        if (!tableWidget) {
-          throw new Error('No se encontró la tabla "Table_1" en la página 1.');
-        }
-
-        // Obtener el modelo de datos de la tabla
-        const dataSource = tableWidget.getDataSource();
-
-        // Obtener los miembros de la dimensión (por ejemplo, empleados)
-        const nameDim = await dataSource.getMembers("name");
-
-        // Obtener el conjunto de resultados (medidas) de la tabla
-        const accData = await dataSource.getResultSet();
-
-        // Crear el archivo CSV dinámico
-        let stringCSV = "Nombre_Empleado,Fecha_Entrada,Aniversario,Dias_Vacaciones_2023,Pendientes_2022\n"; // Agregar encabezados dinámicos
-
-        for (let i = 0; i < nameDim.length; i++) {
-          let name = nameDim[i].id; // Obtener nombre del empleado
-          stringCSV += `${name},`;
-
-          // Recorrer los datos para agregar medidas dinámicas
-          let flag = true;
-          for (let j = 0; j < accData.length; j++) {
-            if (accData[j]["name"].id === name) {
-              if (flag) {
-                stringCSV += `${accData[j]["FECHA DE ENTRADA"].rawValue},${accData[j]["ANIVERSARIO"].rawValue},${accData[j]["DIAS DE VACACIONES 2023"].rawValue},${accData[j]["DIAS PENDIENTES DE TOMAR 2022"].rawValue || ""}\n`;
-                flag = false; // Solo procesar una vez por empleado
-              }
-            }
-          }
-        }
-
-        console.log("Generated CSV from SAC data:", stringCSV);
-        return stringCSV;
-      } catch (error) {
-        console.error("Error al obtener datos de SAC:", error);
-        return "";
-      }
+      console.log("CSV data loaded:", combinedCSV); // Verifica los datos cargados
+      return combinedCSV; // Devuelve los datos CSV como contexto
     }
 
     onCustomWidgetBeforeUpdate(changedProperties) {
