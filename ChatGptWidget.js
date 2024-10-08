@@ -156,57 +156,32 @@
       });
     }
 
-    // Función para verificar que el Query Manager está activo antes de obtener los datos de la tabla
+    // Función para obtener los datos de la tabla "Table_1" en la historia
     async getSACDataAsCSV() {
       try {
-        // Obtener la historia activa
-        const story = sap.fpa.ui.story.getActiveStory();
+        // Usar el método adecuado para obtener el modelo desde SAC (según los blogs)
+        const models = await sap.fpa.ui.story.getAvailableDataSources(); // Obtener fuentes de datos disponibles
 
-        // Obtener el widget de la tabla llamado "Table_1"
-        const tableWidget = story.getWidgets().find(widget => widget.name === "Table_1");
-
-        if (!tableWidget) {
-          throw new Error('No se encontró la tabla "Table_1".');
+        const modelId = models.find(model => model.label === "Table_1").id; // Encontrar el modelo con el nombre 'Table_1'
+        if (!modelId) {
+          throw new Error("No se encontró el modelo 'Table_1'.");
         }
 
-        // Verificar si el Query Manager está activo
-        const dataSource = tableWidget.getDataSource();
-        if (!dataSource.isQueryActive()) {
-          throw new Error("El Query Manager no está activo. Espera a que esté listo.");
-        }
-
-        // Obtener los miembros de la dimensión
-        const nameDim = await dataSource.getMembers("name");
-
-        // Obtener el conjunto de resultados (medidas)
-        const accData = await dataSource.getResultSet();
+        const dataSource = await sap.fpa.ui.story.getDataSource(modelId); // Obtener el modelo de datos
+        const resultSet = await dataSource.getResultSet(); // Obtener los datos
 
         // Generar el CSV con los encabezados y los valores
         let stringCSV = "EMPLEADO,FECHA DE ENTRADA,ANIVERSARIO,DIAS DE VACACIONES 2023,DIAS PENDIENTES DE TOMAR 2022\n";
 
-        for (let i = 1; i < nameDim.length; i++) {
-          let name = nameDim[i].id;
-          stringCSV += name + ",";
-
-          let flag = true;
-
-          for (let j = 0; j < accData.length; j++) {
-            if (accData[j]["name"].id === name) {
-              if (flag) {
-                stringCSV += accData[j]["FECHA DE ENTRADA"].id + "," + accData[j]["ANIVERSARIO"].id + ",";
-                flag = false;
-              }
-
-              const columns = ["DIAS DE VACACIONES 2023", "DIAS PENDIENTES DE TOMAR 2022"];
-              columns.forEach((col) => {
-                if (accData[j][Alias.MeasureDimension].description === col) {
-                  stringCSV += accData[j][Alias.MeasureDimension].rawValue + ",";
-                }
-              });
-            }
-          }
-          stringCSV = stringCSV.slice(0, -1) + "\n"; // Quitar la última coma
-        }
+        resultSet.forEach(row => {
+          stringCSV += [
+            row["EMPLEADO"].id,
+            row["FECHA DE ENTRADA"].rawValue,
+            row["ANIVERSARIO"].rawValue,
+            row["DIAS DE VACACIONES 2023"].rawValue,
+            row["DIAS PENDIENTES DE TOMAR 2022"].rawValue
+          ].join(",") + "\n";
+        });
 
         console.log("Generated CSV from SAC data:", stringCSV);
         return stringCSV;
