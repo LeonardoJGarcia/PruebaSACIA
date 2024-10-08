@@ -156,7 +156,7 @@
       });
     }
 
-    // Función para obtener los datos de la tabla "Table_1" en la página de la historia
+    // Función para verificar que el Query Manager está activo antes de obtener los datos de la tabla
     async getSACDataAsCSV() {
       try {
         // Obtener la historia activa
@@ -169,8 +169,11 @@
           throw new Error('No se encontró la tabla "Table_1".');
         }
 
-        // Obtener el modelo de datos de la tabla
+        // Verificar si el Query Manager está activo
         const dataSource = tableWidget.getDataSource();
+        if (!dataSource.isQueryActive()) {
+          throw new Error("El Query Manager no está activo. Espera a que esté listo.");
+        }
 
         // Obtener los miembros de la dimensión
         const nameDim = await dataSource.getMembers("name");
