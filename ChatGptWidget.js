@@ -109,10 +109,10 @@
         }
 
         try {
-          // Obtener el contexto de datos desde el archivo CSV cargado
-          let contextData = await this.getCSVData();
+          // Obtener el contexto de datos desde la tabla en SAC (Table_1)
+          let contextData = await this.getSACDataAsCSV();
 
-          // Combinar el contenido del contexto (datos del CSV) y el prompt del usuario
+          // Combinar el contenido del contexto (datos de la tabla) y el prompt del usuario
           const fullPrompt = `context data: ${contextData}, Responde las consultas utilizando los datos del contexto en menos de 30 palabras, basado en el siguiente prompt: ${prompt}`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -156,17 +156,51 @@
       });
     }
 
-    // Función para leer y procesar los archivos CSV cargados
-    async getCSVData() {
-      // Simulación de lectura de los dos archivos CSV
-      const csvData1 = `...`; // Aquí irá el contenido procesado de DATOS WALMEX 1.csv
-      const csvData2 = `...`; // Aquí irá el contenido procesado de DATOS WALMEX 2.csv
+    // Función para obtener los datos de la tabla "Table_1" en la página de la historia
+    async getSACDataAsCSV() {
+      try {
+        // Obtener la tabla "Table_1"
+        const dataSource = Table_1.getDataSource();
 
-      // Combina los datos de ambos archivos CSV en un solo string
-      const combinedCSV = csvData1 + "\n" + csvData2;
+        // Obtener los miembros de la dimensión
+        const nameDim = await dataSource.getMembers("name");
 
-      console.log("CSV data loaded:", combinedCSV); // Verifica los datos cargados
-      return combinedCSV; // Devuelve los datos CSV como contexto
+        // Obtener el conjunto de resultados (medidas)
+        const accData = await dataSource.getResultSet();
+
+        // Generar el CSV con los encabezados y los valores
+        let stringCSV = "EMPLEADO,FECHA DE ENTRADA,ANIVERSARIO,DIAS DE VACACIONES 2023,DIAS PENDIENTES DE TOMAR 2022\n";
+
+        for (let i = 1; i < nameDim.length; i++) {
+          let name = nameDim[i].id;
+          stringCSV += name + ",";
+
+          let flag = true;
+
+          for (let j = 0; j < accData.length; j++) {
+            if (accData[j]["name"].id === name) {
+              if (flag) {
+                stringCSV += accData[j]["FECHA DE ENTRADA"].id + "," + accData[j]["ANIVERSARIO"].id + ",";
+                flag = false;
+              }
+
+              const columns = ["DIAS DE VACACIONES 2023", "DIAS PENDIENTES DE TOMAR 2022"];
+              columns.forEach((col) => {
+                if (accData[j][Alias.MeasureDimension].description === col) {
+                  stringCSV += accData[j][Alias.MeasureDimension].rawValue + ",";
+                }
+              });
+            }
+          }
+          stringCSV = stringCSV.slice(0, -1) + "\n"; // Quitar la última coma
+        }
+
+        console.log("Generated CSV from SAC data:", stringCSV);
+        return stringCSV;
+      } catch (error) {
+        console.error("Error al obtener datos de SAC:", error);
+        return "";
+      }
     }
 
     onCustomWidgetBeforeUpdate(changedProperties) {
