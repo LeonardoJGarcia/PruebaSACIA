@@ -156,14 +156,14 @@
       });
     }
 
-    // Función para obtener los datos de la tabla "Table_1" en la historia
+    // Función para obtener los datos de la tabla "Table_1" en "Page_1"
     async getSACDataAsCSV() {
       try {
-        // Acceso al widget de la tabla en la historia mediante su ID o nombre
-        const tableWidget = sap.fpa.ui.story.getWidgets().find(widget => widget.name === "Table_1");
+        // Acceso al widget de la tabla usando el ID "Table_1" dentro de "Page_1"
+        const tableWidget = Page_1.getWidgetByName("Table_1");
 
         if (!tableWidget) {
-          throw new Error('No se encontró la tabla "Table_1".');
+          throw new Error('No se encontró la tabla "Table_1" en la página "Page_1".');
         }
 
         const dataSource = tableWidget.getDataSource();
