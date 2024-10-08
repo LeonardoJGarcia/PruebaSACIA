@@ -159,17 +159,10 @@
     // Función para obtener los datos de la tabla "Table_1" en la historia
     async getSACDataAsCSV() {
       try {
-        // Usar el método adecuado para obtener el modelo desde SAC (según los blogs)
-        const models = await sap.fpa.ui.story.getAvailableDataSources(); // Obtener fuentes de datos disponibles
+        // Acceso al widget de la tabla en la historia
+        const table = Table_1.getDataSource();  // Asegúrate de que Table_1 esté en tu historia
 
-        const modelId = models.find(model => model.label === "Table_1").id; // Encontrar el modelo con el nombre 'Table_1'
-        if (!modelId) {
-          throw new Error("No se encontró el modelo 'Table_1'.");
-        }
-
-        const dataSource = await sap.fpa.ui.story.getDataSource(modelId); // Obtener el modelo de datos
-        const resultSet = await dataSource.getResultSet(); // Obtener los datos
-
+        const resultSet = await table.getResultSet(); // Obtener el conjunto de resultados (medidas)
         // Generar el CSV con los encabezados y los valores
         let stringCSV = "EMPLEADO,FECHA DE ENTRADA,ANIVERSARIO,DIAS DE VACACIONES 2023,DIAS PENDIENTES DE TOMAR 2022\n";
 
