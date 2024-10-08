@@ -109,7 +109,7 @@
         }
 
         try {
-          // Obtener el contexto de datos desde la tabla en SAC (Table_1)
+          // Obtener el contexto de datos desde la tabla en SAC
           let contextData = await this.getSACDataAsCSV();
 
           // Combinar el contenido del contexto (datos de la tabla) y el prompt del usuario
@@ -159,10 +159,16 @@
     // Función para obtener los datos de la tabla "Table_1" en la historia
     async getSACDataAsCSV() {
       try {
-        // Acceso al widget de la tabla en la historia
-        const table = Table_1.getDataSource();  // Asegúrate de que Table_1 esté en tu historia
+        // Acceso al widget de la tabla en la historia mediante su ID o nombre
+        const tableWidget = sap.fpa.ui.story.getWidgets().find(widget => widget.name === "Table_1");
 
-        const resultSet = await table.getResultSet(); // Obtener el conjunto de resultados (medidas)
+        if (!tableWidget) {
+          throw new Error('No se encontró la tabla "Table_1".');
+        }
+
+        const dataSource = tableWidget.getDataSource();
+        const resultSet = await dataSource.getResultSet(); // Obtener el conjunto de resultados (medidas)
+        
         // Generar el CSV con los encabezados y los valores
         let stringCSV = "EMPLEADO,FECHA DE ENTRADA,ANIVERSARIO,DIAS DE VACACIONES 2023,DIAS PENDIENTES DE TOMAR 2022\n";
 
